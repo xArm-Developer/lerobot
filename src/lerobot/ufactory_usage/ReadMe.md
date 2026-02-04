@@ -1,85 +1,240 @@
-# For UFACTORY data collection usage
+# UFACTORY Data Collection Guide(Imitation Learning)
 
-Please first install additional dependencies into your environment by running:
-```
-$ pip install -r requirements_extra.txt
-```
-This would install gello and space mouse related modules. Also, make sure you have [`xArm-Python-SDK`](https://github.com/xArm-Developer/xArm-Python-SDK) installed.
-
-## 1. GELLO for xArm7: 
-By running the command above, `gello_software` package will be installed locally under `./src` folder. To ensure proper configuration of the dummy robot, dynamixel motor offset of each joint on the dummy robot must be confirmed from `gello_get_offset.py` script inside this repository. Please Study the usage of GELLO carefully before continue working with real xArm7. 
-
-**Note**: Gello would also require additional dependencies running its scripts. Consider switching to another `conda env` (like `gello`) with gello offset check.
-
-To get gello offset (should go through this each time gello is powered on):   
-
-Setup and power on the gello dummy robot, hold it with a **known real joint configuration** (use [`0, 0, 0, 90, 0, 90, 0`] degrees as example):
+## ⚠️ Important Notice
+- Once data collection starts, **the relative position between the robot arm and the camera (D435/D435i) must not be changed**.  
+- When making the inference, the position of the camera and the collection must be the same. Otherwise, the collected data will become invalid.  
+- In case of change, the entire process must be re-performed:
 
 ```
-$ conda activate gello #(configured according to gello ReadMe installation requirements)
-(gello) $ python gello_get_offset.py --port /dev/ttyUSB0 --start_joints 0 0 0 1.5708 0 1.5708 0 --joint_signs 1 1 1 1 1 1 1
+Collect Dataset → Train the model → Perform Inference and Evaluation
 ```
-For example, if corresponding output is:
+
+## 1. Hardware Requirements
+
+### Reference Hardware Setup
+- **Robot Arm**: [UFACTORY xArm7](https://www.ufactory.cc/xarm-collaborative-robot/)
+- **End Effector**: [UFACTORY xArm Gripper](https://www.ufactory.cc/product-page/ufactory-xarm-gripper/)
+- **Camera**:  
+  - [Intel RealSense D435](https://www.realsenseai.com/products/stereo-depth-camera-d435/)  
+  - [Intel RealSense D435i](https://www.realsenseai.com/products/depth-camera-d435i/)
+- **Camera Mount**: Provided by UFACTORY (purchase or 3D print)
+  - Purchase: [UFACTORY Camera Stand](https://www.ufactory.cc/product-page/ufactory-xarm-camera-stand/)
+  - 3D Model: [Realsense_Camera_Stand.STEP](https://www.ufactory.cc/wp-content/uploads/2024/05/CameraStand_1300.zip)
+- **Teleoperation Device**: gello
+
+---
+
+## 2. Software Environment Setup
+
+### 2.1 Install librealsense
+
+Reference: [librealsense Linux Installation Guide](https://github.com/realsenseai/librealsense/blob/master/doc/distribution_linux.md)
+
+#### Register Public Key
+```bash
+sudo mkdir -p /etc/apt/keyrings
+curl -sSf https://librealsense.realsenseai.com/Debian/librealsense.pgp | sudo tee /etc/apt/keyrings/librealsense.pgp > /dev/null
 ```
-Attempting to initialize Dynamixel driver (attempt 1/3)
-Successfully initialized Dynamixel driver on /dev/ttyUSB0
 
-best offsets               :  ['0.000', '3.142', '0.000', '1.571', '6.283', '1.571', '4.712']
-best offsets function of pi: [0*np.pi/2, 2*np.pi/2, 0*np.pi/2, 1*np.pi/2, 4*np.pi/2, 1*np.pi/2, 3*np.pi/2 ]
-gripper open (degrees)        113.618359375
-gripper close (degrees)       71.818359375
+#### Install APT HTTPS Support
+```bash
+sudo apt-get install apt-transport-https
 ```
-Then you should config `gello_xarm7` (like in the yaml config file) as:
+
+#### Add the server to the list of repository
+```bash
+echo "deb [signed-by=/etc/apt/keyrings/librealsenseai.gpg] https://librealsense.realsenseai.com/Debian/apt-repo `lsb_release -cs` main" | \
+sudo tee /etc/apt/sources.list.d/librealsense.list
+sudo apt-get update
 ```
-joint_offset_ints: [0, 2, 0, 1, 4, 1, 3] # according to 'best offsets function of pi'
-gripper_config: [8, 113, 71] # (gripper_id， open, close)
+
+#### Install librealsense
+```bash
+sudo apt-get install librealsense2-dkms
+sudo apt-get install librealsense2-utils
 ```
-Then the output result (joint offset and gripper offset) can be set to the `teleoperators/gello_xarm7` configuration. 
 
+---
 
-## 2. Space Mouse:
+### 2.2 Create Python Virtual Environment
 
-The space mouse currently is configured as **2D control** (in XY plane) for Push T block task, if you need more freedom, check and edit the interface in `teleoperators/space_mouse/space_mouse.py`.  
-
-## 3. Lerobot Data Recording with above devices:
-Please use provided `record_uf_edit.py` script in this directory instead of lerobot_record.py in scripts folder. We have made modifications for space mouse data collection (delta command to absolute command) and enabled using external yaml file as flexible configuration. Check the two `*_record_config.yaml` files here and specify correct filename executing `record_uf_edit.py`.
-
-## 4. Example commandline instructions:
-
-### 4.1 Dataset Recording:
-
-Recording with gello_xarm7 (modify the config file with your correct OFFSET and PORT name first!):
-
-```shell
-python record_uf_edit.py --config xarm7_gello_record_config.yaml
-
+#### Linux (Conda)
+```bash
+conda create -y -n lerobot python=3.10
+conda activate lerobot
 ```
-Recording with xarm7 and space mouse (and **Resume** recording on existing dataset):
-```shell
-python record_uf_edit.py --config xarm7_spacemouse_record_config.yaml --resume
 
+#### Install ffmpeg
+```bash
+conda install ffmpeg -c conda-forge
 ```
+
+---
+
+### 2.3 Install LeRobot and Dependencies
+
+#### Install LeRobot
+```bash
+git clone https://github.com/xArm-Developer/lerobot.git
+cd lerobot
+pip install -e .
+```
+
+#### Install Additional Dependencies
+```bash
+cd src/lerobot/ufactory_usage
+pip install -r requirements_extra.txt
+
+cd src/gello
+pip install -e third_party/DynamixelSDK/python
+pip install numpy tyro
+pip install -e .
+pip install pyrealsense2  # 2.56.5.9235
+pip install git+https://github.com/xArm-Developer/xArm-Python-SDK.git
+```
+
+## 3. Data Collection
+
+### 3.1 Teleoperation Test
+
+#### Using gello (xArm7)
+1. Modify the configuration file (example: `xarm7_gello_record_config.yaml`)
+   - **RobotConfig**
+     - `robot_ip`: IP address of the robot
+     - `robot_dof`: Degrees of freedom
+     - `start_joints`: Initial joint positions
+   - **TeleoperatorConfig**
+     - `start_joints`: Initial joint positions
+2. Move the gello joints to match the robot's initial pose
+3. Start the script:
+```bash
+python uf_robot_teleop_test.py --config config/xarm7_gello_record_config.yaml
+```
+4. Press **Enter** to begin teleoperation
+5. Press **ESC** to exit
+
+---
+
+### 3.2 Data Recording
+**Users may define their own data collection strategies. LeRobot only enforces the dataset format.**
+
 **Keyboard control** for data recording:  
+- "`->`" Exit early: Finish current episode, save and enter reset process for next episode preparation;  
+- "`<-`" rerecord_episode + Exit early: Terminate current recording, reset and then re-record this episode;  
+- "`Esc`" stop_recording + Exit early: Exit recording process;
+- "`Enter`" : Continue
 
-“`->`” Exit early: Finish current episode, save and enter reset process for next episode preparation；  
-"`<-`" rerecord_episode + Exit early: Terminate current recording, reset and then re-record this episode；  
-"`Esc`" stop_recording + Exit early: Save current recording and exit recording process；  
-
-### 4.2 Training
-
-Use official script for training, here use `diffusion` model and resume training option as example, edit or remove arguments based on your case:
-```shell
-python -m lerobot.scripts.lerobot_train  --dataset.repo_id=ufactory/xarm7_pushT   --policy.type=diffusion   --output_dir=outputs/train/xarm7_pushT   --job_name=xarm7_pushT   --policy.device=cuda --policy.repo_id=ufactory/xarm7_pushT --steps=800000  --resume=true --config_path=<YOUR_LOCAL_PATH>/train/xarm7_pushT/checkpoints/last/pretrained_model/train_config.json --batch_size=16
+#### Recording with gello(teleoperation)
+```bash
+python uf_robot_record.py --config config/xarm7_gello_record_config.yaml
 ```
 
-### 4.3 Evaluation
-Use official script for trained policy evaluation, for example:
-```shell
-python -m lerobot.scripts.lerobot_eval --policy.path=<YOUR_LOCAL_PATH>/outputs/train/xarm7_pushT/checkpoints/last/pretrained_model/
+#### Recording with scripts(Randomly Generated Targets)
+```bash
+python uf_robot_record.py --config config/xarm7_mock_record_config.yaml
 ```
 
-### 4.4 Others
-For other LeRobot supported features like Dataset Visualization or Editting, please go through LeRobot Documentation for instructions.
+---
 
-## 5. Special Notices:
-Users need to **study the whole codebase thoroughly**, and understand about relevant configuration parameters, since the configurations written in the code are not for all use cases and set-ups, it is the users job to study the code or theories to get good knowledge about them and modify/tune on their own. Especially for diffusion policy, default parameters from LeRobot may be targeted for simulation and not optimized for real robot scenarios.
+### 3.3 Resume Data Recording
+```bash
+# Resume gello-based recording
+python uf_robot_record.py --config config/xarm7_gello_record_config.yaml --resume
+```
+
+```bash
+# Resume random target recording
+python uf_robot_record.py --config config/xarm7_mock_record_config.yaml --resume
+```
+
+---
+
+## 4. Training
+
+### 4.1 Initial Training(Use ACT)
+```bash
+# Note:
+# repo_id must match the value used during data collection
+# policy.type is set to 'act'
+# steps = 800,000
+# Model checkpoints are saved every 20,000 steps
+python -m lerobot.scripts.lerobot_train \
+  --dataset.repo_id=ufactory/xarm7_record_datas \
+  --policy.type=act \
+  --output_dir=outputs/train/xarm7_record_datas \
+  --job_name=xarm7_record_datas \
+  --policy.device=cuda \
+  --policy.repo_id=ufactory/xarm7_record_datas \
+  --steps=800000
+```
+
+### 4.2 Resume Training
+```bash
+python -m lerobot.scripts.lerobot_train \
+  --dataset.repo_id=ufactory/xarm7_record_datas \
+  --policy.type=act \
+  --output_dir=outputs/train/xarm7_record_datas \
+  --job_name=xarm7_record_datas \
+  --policy.device=cuda \
+  --policy.repo_id=ufactory/xarm7_record_datas \
+  --steps=800000 \
+  --batch_size=8 \
+  --save_freq=20000 \
+  --resume=true \
+  --config_path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/train_config.json
+```
+
+## 5. Inference & Evaluation
+
+### Run with a Specified Model
+```bash
+python uf_robot_eval.py --config config/xarm7_gello_record_config.yaml \
+  --policy.path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/
+```
+
+## 6. Dataset Utilities
+
+### Playback an Episode
+Example: view episode index **17**
+```bash
+lerobot-dataset-viz --repo-id ufactory/xarm7_record_datas --episode-index 17
+```
+
+### Delete Episodes
+Example: delete episodes **18** and **19**
+```bash
+lerobot-edit-dataset --repo_id ufactory/xarm7_record_datas \
+  --operation.type delete_episodes \
+  --operation.episode_indices "[18, 19]"
+```
+
+### Merge Datasets
+```python
+from lerobot.datasets.aggregate import aggregate_datasets
+
+aggregate_datasets(
+    repo_ids=[
+        "ufactory/xarm7_record_datas_1",
+        "ufactory/xarm7_record_datas_2"
+    ],
+    aggr_repo_id="ufactory/xarm7_record_datas_merge_1_2"
+)
+```
+
+
+## 7. Important Notes
+Users are expected to thoroughly study the codebase and configuration parameters.  
+The provided configurations are **not guaranteed to work for all scenarios** and must be adjusted based on actual hardware setups and task requirements.
+
+In particular, for **diffusion policies**, the default parameters in LeRobot are primarily designed for simulation and **are not optimized for real-world robots**.
+
+
+## 8. Dataset Examples (Reference Only)
+[Test datasets](https://drive.google.com/drive/folders/1Ms25rd2YYGdh3tHPEsTTMU-m1fE7uNYY?usp=sharing) used during development (not reusable):
+- **xarm7_act_20260119**: 60 successful single-attempt grasps recorded via gello
+- **xarm7_act_20260127**: 80 samples (added 20 failure-and-retry cases)
+- **xarm7_act_mock_20260126**: 60 one-shot grasps generated programmatically
+
+> These datasets are **for reference only**.  
+> They cannot be reused because the robot–camera calibration differs between users.
+
