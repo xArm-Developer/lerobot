@@ -133,6 +133,12 @@ class UFRobot(Robot, Thread):
 
     def configure(self) -> None:
         self.real_arm.motion_enable()
+        self.real_arm.clean_error()
+        self.real_arm.set_mode(0)  # set to idle mode
+        self.real_arm.set_state(0)  # set to start state
+        time.sleep(0.5)
+        self.real_arm.set_servo_angle(angle=self.config.start_joints, is_radian=True, wait=True)
+
         if self._control_space == "joint":
             self.real_arm.set_mode(6) 
         elif self._control_space == "cartesian":
@@ -149,6 +155,7 @@ class UFRobot(Robot, Thread):
             self.real_arm.set_gripper_enable(True)
             self.real_arm.set_gripper_mode(0)
             self.real_arm.set_gripper_speed(3000)
+            self.real_arm.set_gripper_position(800)
             if not self._get_arm_err() == 0:
                 raise RuntimeError(f"Failed to set correct state to Gripper! Controller Error code: {self._get_arm_err()} !")
         
@@ -221,6 +228,8 @@ class UFRobot(Robot, Thread):
     def send_action(self, action: dict) -> np.ndarray:
         if not self._is_connected:
             raise ConnectionError()
+        if self.real_arm.error_code != 0:
+            return action
 
         before_write_t = time.perf_counter()
         if self._control_space == "joint":
@@ -244,8 +253,8 @@ class UFRobot(Robot, Thread):
                 self.real_arm.set_state(0)
                 time.sleep(0.1)
 
-            self.real_arm.set_servo_angle(angle=cmd_list[:7], speed=jnt_spd, is_radian=True, wait=wait_)
-            gripper_command = self.GRIPPER_OPEN + cmd_list[7] * (self.GRIPPER_CLOSE - self.GRIPPER_OPEN)
+            self.real_arm.set_servo_angle(angle=cmd_list[:self._dof], speed=jnt_spd, is_radian=True, wait=wait_)
+            gripper_command = self.GRIPPER_OPEN + cmd_list[self._dof] * (self.GRIPPER_CLOSE - self.GRIPPER_OPEN)
         elif self._control_space == "cartesian": # unit: mm? 
             lin_spd = MAX_LINEAR_VELOCITY_MM
             

@@ -6,54 +6,83 @@ import time
 import numpy as np
 
 from lerobot.teleoperators import Teleoperator
-from .config_gello_xarm7 import GelloxArm7Config
+from .config_gello_xarm import GelloxArmConfig
+from gello.dynamixel.driver import DynamixelDriver
 from gello.agents.gello_agent import GelloAgent, DynamixelRobotConfig
 from lerobot.utils.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 
 
 logger = logging.getLogger(__name__)
 
-class GelloxArm7(Teleoperator):
+class GelloxArm(Teleoperator):
     """
-    GELLO for xArm7 tele-op, ref: https://wuphilipp.github.io/gello_site/
+    GELLO for xArm tele-op, ref: https://wuphilipp.github.io/gello_site/
     """
 
-    config_class = GelloxArm7Config
-    name = "gello_xarm7"
+    config_class = GelloxArmConfig
+    name = "gello_xarm"
 
-    def __init__(self, config: GelloxArm7Config):
+    def __init__(self, config: GelloxArmConfig):
         super().__init__(config)
         self.config = config
         self._is_connected = False
         self._is_calibrated = True # CHECK!!
+
+        # auto get joint offset from gello
+        joint_ids = []
+        joint_ids.extend(self.config.joint_ids)
+        if self.config.gripper_id >= 0:
+            joint_ids.append(self.config.gripper_id)
+        driver = DynamixelDriver(joint_ids, port=self.config.port, baudrate=57600)
+        for _ in range(10):
+            driver.get_joints()  # warmup
+        curr_joints = driver.get_joints()
+        driver.close()
+        joint_offsets = []
+        for i in range(len(self.config.start_joints)):
+            offset = curr_joints[i] - self.config.start_joints[i] / self.config.joint_signs[i]
+            joint_offsets.append(offset)
+        if self.config.gripper_id >= 0:
+            gripper_config = [self.config.gripper_id, np.rad2deg(curr_joints[-1]) - 0.2, np.rad2deg(curr_joints[-1]) - 42]
+        else:
+            gripper_config = None
+
         param_dict = {
                 "joint_ids": self.config.joint_ids,
                 "joint_signs": self.config.joint_signs,
-                "joint_offsets": list(x*(np.pi / 2) for x in self.config.joint_offset_ints),
-                "gripper_config": self.config.gripper_config
+                "joint_offsets": joint_offsets,
+                "gripper_config": gripper_config
         }
         self._dynamixel_robo_config = DynamixelRobotConfig(**param_dict)
         print(self._dynamixel_robo_config)
+        self.dof = len(self.config.start_joints)
+
+        if self.config.torque_joint_ids:
+            driver = DynamixelDriver(self.config.torque_joint_ids, port=self.config.port, baudrate=57600)
+            driver.set_torque_mode(True)
+            driver.close()
 
     @property
     def action_features(self) -> dict:
         # Add one more dof for gripper
-        act_ft = {
-            "joint_position": {
-            "dtype": "float",
-            "shape": (8,)
-            }
-        }
+        # act_ft = {
+        #     "joint_position": {
+        #     "dtype": "float",
+        #     "shape": (self.dof+1,)
+        #     }
+        # }
+        act_ft = { f"J{i+1}.pos": float for i in range(self.dof) } | {"gripper.pos": float}
         return act_ft
 
     @property
     def feedback_features(self) -> dict:
-        fbk_ft = {
-            "joint_position": {
-            "dtype": "float",
-            "shape": (8,)
-            }
-        }
+        # fbk_ft = {
+        #     "joint_position": {
+        #     "dtype": "float",
+        #     "shape": (self.dof+1,)
+        #     }
+        # }
+        fbk_ft = { f"J{i+1}.pos": float for i in range(self.dof) } | {"gripper.pos": float}
         return fbk_ft
 
     @property
@@ -88,15 +117,15 @@ class GelloxArm7(Teleoperator):
 
     def get_action(self) -> dict[str, np.ndarray]:
         start = time.perf_counter()
-        fake_obs = dict({"joint_state": np.array([0.0]*8)}) # for agent.act() argument, actually no use
+        fake_obs = dict({"joint_state": np.array([0.0]*(self.dof+1))}) # for agent.act() argument, actually no use
         action_array = self.gello_agent.act(fake_obs) # current gello joint pos as np.ndarray
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read action: {dt_ms:.1f}ms")
 
         action = {}
-        for i in range(7):
+        for i in range(self.dof):
             action.update({f"J{i+1}.pos": action_array[i]})
-        action.update({"gripper.pos": action_array[7]})
+        action.update({"gripper.pos": action_array[self.dof]})
         return action
 
     def send_feedback(self, feedback: dict[str, float]) -> None:

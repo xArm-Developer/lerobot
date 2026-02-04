@@ -287,6 +287,10 @@ def record_loop(
         preprocessor.reset()
         postprocessor.reset()
 
+    last_robot_cmd = robot.get_observation()
+    # only positional cmd for now: Remove velo from observation for cmd if needed!
+    last_robot_cmd = { k: v for k,v in last_robot_cmd.items() if not "vel" in k }
+
     timestamp = 0
     start_episode_t = time.perf_counter()
     while timestamp < control_time_s:
@@ -322,6 +326,11 @@ def record_loop(
 
         elif policy is None and isinstance(teleop, Teleoperator):
             act = teleop.get_action()
+
+            # (space mouse) from delta Cartesian cmd to absolute command
+            if "pose.dx" in act:
+                last_robot_cmd.update({"pose.x": last_robot_cmd["pose.x"] + act["pose.dx"], "pose.y": last_robot_cmd["pose.y"] + act["pose.dy"], "pose.z": last_robot_cmd["pose.z"] + act["pose.dz"]})
+                act = last_robot_cmd.copy() # watch out this is shallow copy, not for nested dict
 
             # Applies a pipeline to the raw teleop action, default is IdentityProcessor
             act_processed_teleop = teleop_action_processor((act, obs))
