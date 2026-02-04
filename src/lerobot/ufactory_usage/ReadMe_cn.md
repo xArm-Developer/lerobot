@@ -118,7 +118,7 @@ python python uf_robot_teleop_test.py --config config/xarm7_gello_record_config.
 ```bash
 python uf_robot_record.py --config config/xarm7_gello_record_config.yaml
 ```
-[![演示视频](src/lerobot/ufactory_usage/assets/recording with gello.png)]
+[![演示视频](assets/recording-with-gello.png)]
 (https://www.bilibili.com/video/BV13jFjz2Eqq/?spm_id_from=333.1387.homepage.video_card.click)
 
 
@@ -127,8 +127,8 @@ python uf_robot_record.py --config config/xarm7_gello_record_config.yaml
 python uf_robot_record.py --config config/xarm7_mock_record_config.yaml
 ```
 
-[![演示视频](src/lerobot/ufactory_usage/assets/recording with scripts.png)]
-(bilibili.com/video/BV1tpf9BVEvp/?spm_id_from=333.1387.homepage.video_card.click)
+[![演示视频](assets/recording-with-scripts.png)]
+(https://www.bilibili.com/video/BV1tpf9BVEvp/?spm_id_from=333.1387.homepage.video_card.click)
 
 
 ### 3.3 恢复采集
@@ -229,9 +229,13 @@ aggregate_datasets(
 
 训练后效果：
 * 使用xarm7_act_20260127进行训练，训练50w次。
-[![演示视频](src/lerobot/ufactory_usage/assets/Inference & Evaluation-gello.png)]
+[![演示视频](assets/inference-gello.png)]
 (https://www.bilibili.com/video/BV12xFjzzEaX/?spm_id_from=333.1387.homepage.video_card.click)
 
 * 使用xarm7_act_mock_20260126，训练50w次。
-[![演示视频](src/lerobot/ufactory_usage/assets/Inference & Evaluation-scripts.png)]
+[![演示视频](assets/inference-scripts.png)]
 (https://www.bilibili.com/video/BV14pf9BVEox/?spm_id_from=333.1387.homepage.video_card.click)
+
+* 失败案例
+[![演示视频](assets/failure-cases.png)]
+(https://www.bilibili.com/video/BV1Waf9BTEMr/?spm_id_from=333.1387.homepage.video_card.click)
