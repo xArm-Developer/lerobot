@@ -238,3 +238,9 @@ In particular, for **diffusion policies**, the default parameters in LeRobot are
 > These datasets are **for reference only**.  
 > They cannot be reused because the robot–camera calibration differs between users.
 
+* Train using xarm7_act_20260127 for 500,000 iterations.
+  [![watch the video](/src/lerobot/ufactory_usage/assets/inference-gello.png)](https://www.youtube.com/watch?v=wTiWLiHciT8)
+* Train xarm7_act_mock_20260126 for 500,000 iterations.
+  --waiting...
+* Failure Cases
+  --waiting...

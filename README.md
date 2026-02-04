@@ -4,6 +4,8 @@
 
 Please make sure you have properly followed the LeRobot official installation (**from source**: `pip install -e .`) procedure below, and properly setup the conda environment with all required dependent packages installed. Then please **check further detailed instructions** in [ufactory_usage](./src/lerobot/ufactory_usage) directory. 
 
+[![watch the video](/src/lerobot/ufactory_usage/assets/inference-gello.png)](https://www.youtube.com/watch?v=wTiWLiHciT8)
+
 
 ## Acknowledgement:
 
@@ -17,7 +19,7 @@ The Integration work in this repo is inspired by original code from other talent
 Special thanks to the works above and contributions from the AI robotics open-source community.
 
 <p align="center">
-  <img alt="LeRobot, Hugging Face Robotics Library" src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/lerobot-logo-thumbnail.png" width="100%">
+  <img alt="LeRobot, Hugging Face Robotics Library" src="media/lerobot-logo-thumbnail.png" width="100%">
   <br/>
   <br/>
 </p>
@@ -30,7 +32,7 @@ Special thanks to the works above and contributions from the AI robotics open-so
 [![Status](https://img.shields.io/pypi/status/lerobot)](https://pypi.org/project/lerobot/)
 [![Version](https://img.shields.io/pypi/v/lerobot)](https://pypi.org/project/lerobot/)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.1-ff69b4.svg)](https://github.com/huggingface/lerobot/blob/main/CODE_OF_CONDUCT.md)
-[![Discord](https://dcbadge.vercel.app/api/server/C5P34WJ68S?style=flat)](https://discord.gg/s3KuuzsPFb)
+[![Discord](https://img.shields.io/badge/Discord-Join_Us-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/q8Dzzpym3f)
 
 <!-- [![Coverage](https://codecov.io/gh/huggingface/lerobot/branch/main/graph/badge.svg?token=TODO)](https://codecov.io/gh/huggingface/lerobot) -->
 
@@ -43,7 +45,7 @@ Special thanks to the works above and contributions from the AI robotics open-so
 
 <div align="center">
   <img
-    src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/hope_jr/hopejr.png"
+    src="media/hope_jr/hopejr.png"
     alt="HopeJR robot"
     title="HopeJR robot"
     width="60%"
@@ -67,8 +69,8 @@ Special thanks to the works above and contributions from the AI robotics open-so
 <div align="center">
   <table>
     <tr>
-      <td align="center"><img src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/so101/so101.webp" alt="SO-101 follower arm" title="SO-101 follower arm" width="90%"/></td>
-      <td align="center"><img src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/so101/so101-leader.webp" alt="SO-101 leader arm" title="SO-101 leader arm" width="90%"/></td>
+      <td align="center"><img src="media/so101/so101.webp" alt="SO-101 follower arm" title="SO-101 follower arm" width="90%"/></td>
+      <td align="center"><img src="media/so101/so101-leader.webp" alt="SO-101 leader arm" title="SO-101 leader arm" width="90%"/></td>
     </tr>
   </table>
 
@@ -82,7 +84,7 @@ Special thanks to the works above and contributions from the AI robotics open-so
   <p>Want to take it to the next level? Make your SO-101 mobile by building LeKiwi!</p>
   <p>Check out the <a href="https://huggingface.co/docs/lerobot/lekiwi">LeKiwi tutorial</a> and bring your robot to life on wheels.</p>
 
-  <img src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/lekiwi/kiwi.webp" alt="LeKiwi mobile robot" title="LeKiwi mobile robot" width="50%">
+  <img src="media/lekiwi/kiwi.webp" alt="LeKiwi mobile robot" title="LeKiwi mobile robot" width="50%">
 </div>
 
 <br/>
@@ -105,9 +107,9 @@ Special thanks to the works above and contributions from the AI robotics open-so
 
 <table>
   <tr>
-    <td><img src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/gym/aloha_act.gif" width="100%" alt="ACT policy on ALOHA env"/></td>
-    <td><img src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/gym/simxarm_tdmpc.gif" width="100%" alt="TDMPC policy on SimXArm env"/></td>
-    <td><img src="https://raw.githubusercontent.com/huggingface/lerobot/main/media/gym/pusht_diffusion.gif" width="100%" alt="Diffusion policy on PushT env"/></td>
+    <td><img src="media/gym/aloha_act.gif" width="100%" alt="ACT policy on ALOHA env"/></td>
+    <td><img src="media/gym/simxarm_tdmpc.gif" width="100%" alt="TDMPC policy on SimXArm env"/></td>
+    <td><img src="media/gym/pusht_diffusion.gif" width="100%" alt="Diffusion policy on PushT env"/></td>
   </tr>
   <tr>
     <td align="center">ACT policy on ALOHA env</td>
