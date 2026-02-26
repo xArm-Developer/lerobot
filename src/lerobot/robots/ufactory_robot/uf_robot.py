@@ -2,6 +2,7 @@
 
 import time
 import math
+import logging
 import numpy as np
 from lerobot.cameras.utils import make_cameras_from_configs
 
@@ -65,13 +66,10 @@ class UFRobot(Robot, Thread):
         self._cart_obs_has_vel = any('velo.' in key for key in CARTESIAN_OBS_KEYS)
         self._jnt_obs_has_vel = self.config.observe_joint_vel
 
-        self._gripper_type = self.config.gripper_type if self.config.gripper_type > 0 else 1 if self.config.gripper_control else 0
+        self._gripper_type = 0 if not self.config.gripper_control else self.config.gripper_type if self.config.gripper_type > 0 else 1
         if self._gripper_type == 10:
             self.pika_device = PikaDevice(2, pika_gripper_port=self.config.gripper_port)
             self.pika_gripper = self.pika_device.pika_gripper
-            # from .pika_gripper import PikaGripper
-            # self.pika_gripper = PikaGripper(self.config.gripper_port)
-            import logging
             logger = logging.getLogger('pika.gripper')
             logger.setLevel(logging.WARNING)
 
@@ -81,11 +79,11 @@ class UFRobot(Robot, Thread):
             state_features = {f"J{motor}.pos": float for motor in range(1, self._dof+1)}
             if self._jnt_obs_has_vel:
                 state_features.update({f"J{motor}.vel": float for motor in range(1, self._dof+1)})
-            if self.config.gripper_control:
+            if self._gripper_type > 0:
                 state_features.update({"gripper.pos": float})
         elif self._control_space == "cartesian":
             state_features = {key: float for key in CARTESIAN_OBS_KEYS}
-            if self.config.gripper_control:
+            if self._gripper_type > 0:
                 state_features.update({"gripper.pos": float})
         else:
             raise ValueError(f"Please check the given control space of uf_robot! got {self._control_space}")
@@ -104,7 +102,7 @@ class UFRobot(Robot, Thread):
         return {**self._robot_state_features, **self._cam_features}
 
     @property
-    def action_features(self)-> [str, type]:
+    def action_features(self)-> dict:
         if self._control_space == "joint":
             action_ft = {f"J{motor}.pos": float for motor in range(1, self._dof+1)}
         elif self._control_space == "cartesian":
@@ -112,7 +110,7 @@ class UFRobot(Robot, Thread):
         else:
             raise ValueError(f"Please check the given control space of uf_robot! got {self._control_space}")
         # Consider adding velocity configuration ??
-        if self.config.gripper_control:
+        if self._gripper_type > 0:
             action_ft.update({"gripper.pos": float})
         return action_ft
 
@@ -269,7 +267,7 @@ class UFRobot(Robot, Thread):
             cmd_list = [0]*(self._dof+1)
             for i in range(self._dof):
                 cmd_list[i] = action[f"J{i+1}.pos"]
-            if self.config.gripper_control:
+            if self._gripper_type > 0:
                 cmd_list[self._dof] = action["gripper.pos"]
 
             # TODO: make mode 6 compatible with wait=True

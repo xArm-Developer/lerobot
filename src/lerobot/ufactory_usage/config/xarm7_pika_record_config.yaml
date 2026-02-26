@@ -4,7 +4,6 @@ RobotConfig:
   robot_ip: "192.168.1.85"
   robot_dof: 7
   control_space: "cartesian"
-  gripper_control: True
   gripper_type: 10
   # gripper_port: "/dev/ttyUSB1"
   start_joints: [0, 0, 0, 1.2479, 0, 1.27409, 0]
