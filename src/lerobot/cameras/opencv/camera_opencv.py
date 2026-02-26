@@ -237,7 +237,8 @@ class OpenCVCamera(Camera):
         success = self.videocapture.set(cv2.CAP_PROP_FPS, float(self.fps))
         actual_fps = self.videocapture.get(cv2.CAP_PROP_FPS)
         # Use math.isclose for robust float comparison
-        if not success or not math.isclose(self.fps, actual_fps, rel_tol=1e-3):
+        # if not success or not math.isclose(self.fps, actual_fps, rel_tol=1e-3):
+        if not math.isclose(self.fps, actual_fps, rel_tol=1e-3):
             raise RuntimeError(f"{self} failed to set fps={self.fps} ({actual_fps=}).")
 
     def _validate_fourcc(self) -> None:
@@ -255,7 +256,8 @@ class OpenCVCamera(Camera):
         actual_fourcc_code_int = int(actual_fourcc_code)
         actual_fourcc = "".join([chr((actual_fourcc_code_int >> 8 * i) & 0xFF) for i in range(4)])
 
-        if not success or actual_fourcc != self.config.fourcc:
+        # if not success or actual_fourcc != self.config.fourcc:
+        if actual_fourcc != self.config.fourcc:
             logger.warning(
                 f"{self} failed to set fourcc={self.config.fourcc} (actual={actual_fourcc}, success={success}). "
                 f"Continuing with default format."
@@ -274,13 +276,15 @@ class OpenCVCamera(Camera):
         height_success = self.videocapture.set(cv2.CAP_PROP_FRAME_HEIGHT, float(self.capture_height))
 
         actual_width = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_WIDTH)))
-        if not width_success or self.capture_width != actual_width:
+        # if not width_success or self.capture_width != actual_width:
+        if self.capture_width != actual_width:
             raise RuntimeError(
                 f"{self} failed to set capture_width={self.capture_width} ({actual_width=}, {width_success=})."
             )
 
         actual_height = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        if not height_success or self.capture_height != actual_height:
+        # if not height_success or self.capture_height != actual_height:
+        if self.capture_height != actual_height:
             raise RuntimeError(
                 f"{self} failed to set capture_height={self.capture_height} ({actual_height=}, {height_success=})."
             )
