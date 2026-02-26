@@ -188,29 +188,29 @@ python uf_robot_record.py --config config/xarm7_pika_record_config.yaml --resume
 # 这里训练策略policy.type选用act，训练次数steps为80万次
 # 训练过程每2万次保存一次结果，结果输出到output_dir对应目录中
 python -m lerobot.scripts.lerobot_train \
---dataset.repo_id=ufactory/xarm7_record_datas \
---policy.type=act \
---policy.device=cuda \
---policy.repo_id=ufactory/xarm7_record_datas \
---output_dir=outputs/train/xarm7_record_datas \
---job_name=xarm7_record_datas \
---steps=800000
+  --dataset.repo_id=ufactory/xarm7_record_datas \
+  --policy.type=act \
+  --policy.device=cuda \
+  --policy.repo_id=ufactory/xarm7_record_datas \
+  --output_dir=outputs/train/xarm7_record_datas \
+  --job_name=xarm7_record_datas \
+  --steps=800000
 ```
 
 ### 5.2 恢复训练
 ```bash
 python -m lerobot.scripts.lerobot_train \
---dataset.repo_id=ufactory/xarm7_record_datas \
---policy.type=act \
---policy.device=cuda \
---policy.repo_id=ufactory/xarm7_record_datas \
---output_dir=outputs/train/xarm7_record_datas \
---job_name=xarm7_record_datas \
---steps=800000 \
---batch_size=8 \
---save_freq=20000 \
---resume=true \
---config_path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/train_config.json
+  --dataset.repo_id=ufactory/xarm7_record_datas \
+  --policy.type=act \
+  --policy.device=cuda \
+  --policy.repo_id=ufactory/xarm7_record_datas \
+  --output_dir=outputs/train/xarm7_record_datas \
+  --job_name=xarm7_record_datas \
+  --steps=800000 \
+  --batch_size=8 \
+  --save_freq=20000 \
+  --resume=true \
+  --config_path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/train_config.json
 ```
 
 ## 6. 推理
@@ -218,8 +218,8 @@ python -m lerobot.scripts.lerobot_train \
 ### 指定模型进行推理
 ```bash
 python uf_robot_eval.py \
---config config/xarm7_gello_record_config.yaml \
---policy.path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/
+  --config config/xarm7_gello_record_config.yaml \
+  --policy.path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/
 ```
 
 ## 7. 数据集工具
@@ -229,17 +229,18 @@ python uf_robot_eval.py \
 例如查看索引号为17的episode:
 ```bash
 lerobot-dataset-viz \
---repo-id ufactory/xarm7_record_datas \
---episode-index 17
+  --repo-id ufactory/xarm7_record_datas \
+  --display-compressed-images true \
+  --episode-index 17
 ```
 
 ### 删除某些索引的episodes:
 例如删除索引号为18和19的episode:
 ```bash
 lerobot-edit-dataset \
---repo_id ufactory/xarm7_record_datas \
---operation.type delete_episodes \
---operation.episode_indices "[18, 19]"
+  --repo_id ufactory/xarm7_record_datas \
+  --operation.type delete_episodes \
+  --operation.episode_indices "[18, 19]"
 ```
 
 ### 合并数据集
@@ -247,11 +248,11 @@ lerobot-edit-dataset \
 from lerobot.datasets.aggregate import aggregate_datasets
 
 aggregate_datasets(
-    repo_ids=["ufactory/xarm7_record_datas_1", "ufactory/xarm7_record_datas_2"], # 待合并的数据集ID或本地路径
-    aggr_repo_id="ufactory/xarm7_record_datas_merge_1_2", # 合并后数据集的名称
-    # data_files_size_in_mb=200,         # 每个数据文件最大200MB
-    # video_files_size_in_mb=500         # 每个视频文件最大500MB
-    )
+  repo_ids=["ufactory/xarm7_record_datas_1", "ufactory/xarm7_record_datas_2"], # 待合并的数据集ID或本地路径
+  aggr_repo_id="ufactory/xarm7_record_datas_merge_1_2", # 合并后数据集的名称
+  # data_files_size_in_mb=200,         # 每个数据文件最大200MB
+  # video_files_size_in_mb=500         # 每个视频文件最大500MB
+)
 ```
 
 ### 8.重要提示

@@ -221,7 +221,8 @@ python -m lerobot.scripts.lerobot_train \
 
 ### Run with a Specified Model
 ```bash
-python uf_robot_eval.py --config config/xarm7_gello_record_config.yaml \
+python uf_robot_eval.py \
+  --config config/xarm7_gello_record_config.yaml \
   --policy.path=outputs/train/xarm7_record_datas/checkpoints/last/pretrained_model/
 ```
 
@@ -230,13 +231,17 @@ python uf_robot_eval.py --config config/xarm7_gello_record_config.yaml \
 ### Playback an Episode
 Example: view episode index **17**
 ```bash
-lerobot-dataset-viz --repo-id ufactory/xarm7_record_datas --episode-index 17
+lerobot-dataset-viz \
+  --repo-id ufactory/xarm7_record_datas \
+  --display-compressed-images true \
+  --episode-index 17
 ```
 
 ### Delete Episodes
 Example: delete episodes **18** and **19**
 ```bash
-lerobot-edit-dataset --repo_id ufactory/xarm7_record_datas \
+lerobot-edit-dataset \
+  --repo_id ufactory/xarm7_record_datas \
   --operation.type delete_episodes \
   --operation.episode_indices "[18, 19]"
 ```
@@ -246,11 +251,11 @@ lerobot-edit-dataset --repo_id ufactory/xarm7_record_datas \
 from lerobot.datasets.aggregate import aggregate_datasets
 
 aggregate_datasets(
-    repo_ids=[
-        "ufactory/xarm7_record_datas_1",
-        "ufactory/xarm7_record_datas_2"
-    ],
-    aggr_repo_id="ufactory/xarm7_record_datas_merge_1_2"
+  repo_ids=[
+    "ufactory/xarm7_record_datas_1",
+    "ufactory/xarm7_record_datas_2"
+  ],
+  aggr_repo_id="ufactory/xarm7_record_datas_merge_1_2"
 )
 ```
 
@@ -273,6 +278,6 @@ In particular, for **diffusion policies**, the default parameters in LeRobot are
 > They cannot be reused because the robot–camera position differs between users.
 
 * Train using xarm7_act_20260127 for 500,000 training steps.
-  [![watch the video](/src/lerobot/ufactory_usage/assets/inference-gello.png)](https://www.youtube.com/watch?v=wTiWLiHciT8)
+  [![watch the video](assets/inference-gello.png)](https://www.youtube.com/watch?v=wTiWLiHciT8)
 * Train xarm7_pika_datas_aa_merge_0208_0209_2pi for 400,000 training steps.
-  [![watch the video](/src/lerobot/ufactory_usage/assets/inference-pika.png)](https://youtu.be/IiyvewZh5OY)
+  [![watch the video](assets/inference-pika.png)](https://youtu.be/IiyvewZh5OY)
