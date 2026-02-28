@@ -19,12 +19,7 @@ from lerobot.robots import (  # noqa: F401
 from lerobot.teleoperators import (  # noqa: F401
     Teleoperator,
     TeleoperatorConfig,
-    bi_so100_leader,
-    homunculus,
-    koch_leader,
     make_teleoperator_from_config,
-    so100_leader,
-    so101_leader,
     gello_xarm,
     space_mouse,
     ufactory_mock,
